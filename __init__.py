@@ -16,7 +16,7 @@ bl_info = {
     "author" : "Solessfir",
     "description" : "",
     "blender" : (3, 4, 1),
-    "version" : (0, 0, 1),
+    "version" : (1, 0, 1),
     "location" : "3D Viewport Sidebar",
     "warning" : "",
     "category" : "3D View"

@@ -1,5 +1,6 @@
 import bpy.types
 from bpy.props import BoolProperty
+from bpy.props import FloatProperty
 
 class GT_PG_Properties(bpy.types.PropertyGroup):
     bl_idname = "gt.properties"
@@ -7,6 +8,7 @@ class GT_PG_Properties(bpy.types.PropertyGroup):
     bl_options = {"REGISTER", "UNDO"}
 
     b_collapse_optional_settings: BoolProperty(name = "Collapse Optional Settings", default = False)
+    water_opacity: FloatProperty(name = "", default = 0.75, min = 0, max = 1, description = "Opacity that Fix Alpha will use for Water")
 
 
 class GT_PT_Panel(bpy.types.Panel):
@@ -16,6 +18,10 @@ class GT_PT_Panel(bpy.types.Panel):
     bl_category = "Gothic Tweaker"
     #bl_options = {"HIDE_HEADER"}
 
+    def draw_header(self, context):
+        layout = self.layout
+        layout.label(text = "", icon = "SETTINGS")
+
     def draw(self, context):
         # Pointer to the Property Group
         properties = context.scene.GT_PG_Properties
@@ -24,10 +30,6 @@ class GT_PT_Panel(bpy.types.Panel):
         row = layout.row()
         column = row.column()
         column.operator("operator.clean_collision")
-
-        row = layout.row()
-        column = row.column()
-        column.operator("operator.fix_alpha")
 
         row = layout.row()
         column = row.column()
@@ -42,3 +44,8 @@ class GT_PT_Panel(bpy.types.Panel):
             row = layout.row()
             column = row.column()
             column.operator("operator.rename_all_meshs_by_material_name")
+
+            row = layout.row()
+            column = row.column()
+            row.prop(properties, "water_opacity")
+            column.operator("operator.fix_alpha")
