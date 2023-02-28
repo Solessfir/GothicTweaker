@@ -2,9 +2,9 @@
 Blender Addon for fixing Gothic World after importing it using [KrxImpExp](https://gitlab.com/Patrix9999/krximpexp)
 
 ### Installation:
-1. Rename the downloaded folder to GothicTweaker
-2. Copy to *...Blender \*version*\\*version\*\scripts\addons*<br><br>
-Alternatively, use *Install an Addon* from Blender *Preferences*
+1. [Download](https://github.com/Solessfir/GothicTweaker/releases/tag/3.4) GothicTweaker.zip
+2. Extract to *...Blender [version]\\[version]\scripts\addons*
+* Alternatively, use *Install an Addon* from Blender *Preferences*
 
 ### Usage:
 Press *N* and find *Gothic Tweaker* tab
