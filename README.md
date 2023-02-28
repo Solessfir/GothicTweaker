@@ -13,7 +13,7 @@ Press *N* and find *Gothic Tweaker* tab
 * **Clean Collision:** This will remove all collision and sun blocker faces and their materials
 * **Fix Alpha:** This will fix Alpha on the Trees, Flags, etc.
 * **Rename Material Slots:** This will rename all material slots by their texture name
-* **Rename All Meshes:** This will rename all meshes in *.blend* file by their material name. Assuming that you have split mesh by material otherwise, it will use the first material index as name
+* **Rename All Meshes:** This will rename all meshes in *.blend* file by their material name. Assuming that you have split mesh by material otherwise, it will use the first material index as the name
 
 ### Notes:
 * I have extensively used *Material Utilities* addon that comes with *Blender* to clean and merge materials
