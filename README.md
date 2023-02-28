@@ -21,3 +21,4 @@ Press *N* and find *Gothic Tweaker* tab
 ### Notes:
 * I have extensively used *Material Utilities* addon that comes with *Blender* to clean and merge materials
 * This Addon was used to clean exported *.zen* world with all *VOBs*. Guide can be found [here](https://telegra.ph/How-to-export-all-VOBs-from-ZEN-02-26)
+* There is an old alternative that can be found [here](https://forum.worldofplayers.de/forum/threads/1492323-Blender-Script-Gothic-MaT-Blender)
