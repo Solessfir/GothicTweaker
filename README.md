@@ -1,5 +1,6 @@
 # Gothic Tweaker
-Blender Addon for fixing Gothic World after importing it using [KrxImpExp](https://gitlab.com/Patrix9999/krximpexp)
+Blender Addon for fixing Gothic World after importing it using [KrxImpExp](https://gitlab.com/Patrix9999/krximpexp)  
+**Tested for Gothic 2 only! You may encounter some problems if you use it with Gothic 1**
 
 ### Installation:
 1. [Download](https://github.com/Solessfir/GothicTweaker/releases/tag/3.4) GothicTweaker.zip
