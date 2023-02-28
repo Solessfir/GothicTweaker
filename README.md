@@ -2,7 +2,7 @@
 Blender Addon for fixing Gothic World after importing it using [KrxImpExp](https://gitlab.com/Patrix9999/krximpexp)  
 **Tested for Gothic 2 only! You may encounter some problems if you use it with Gothic 1**
 
-![image](https://user-images.githubusercontent.com/34831419/221935321-ecf18815-3e06-45b4-9196-7e76f647cc81.png)
+![image](https://user-images.githubusercontent.com/34831419/221976921-2465a688-0231-4dcc-9ac4-b2127456f092.png)
 
 ### Installation:
 1. [Download](https://github.com/Solessfir/GothicTweaker/releases/tag/3.4) GothicTweaker.zip
