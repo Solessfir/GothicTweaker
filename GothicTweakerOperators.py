@@ -1,7 +1,8 @@
 import bpy
 import bmesh
+from bpy_extras.node_shader_utils import PrincipledBSDFWrapper
 
-class GT_OT_CleanCollision(bpy.types.Operator):
+class Operator_CleanCollision(bpy.types.Operator):
     bl_idname = "operator.clean_collision"
     bl_label = "Clean Collision"
     bl_description = "This will remove all collision and sun blocker faces and their materials"
@@ -67,10 +68,10 @@ class GT_OT_CleanCollision(bpy.types.Operator):
         self.report({"INFO"}, "Total cleaned: " + str(removed_materials_amount))
 
 
-class GT_OT_FixAlpha(bpy.types.Operator):
-    bl_idname = "operator.fix_alpha"
-    bl_label = "Fix Alpha"
-    bl_description = "This will fix Alpha on the Trees, Water, Flags, etc. This should be used if KrxImpExp didn't fix it on the import"
+class Operator_ApplyAlpha(bpy.types.Operator):
+    bl_idname = "operator.apply_alpha"
+    bl_label = "Apply Alpha"
+    bl_description = "This will fix Alpha on the Trees, Water, Flags, etc.\nThis should be used if KrxImpExp didn't fix it on the import or you want to apply opacity to Gothic 2 water bodies"
     bl_options = {"REGISTER", "UNDO"}
 
     @classmethod
@@ -78,68 +79,61 @@ class GT_OT_FixAlpha(bpy.types.Operator):
         return context.active_object is not None and context.active_object.type == "MESH"
 
     def execute(self, context):
-        self.fix_alpha(context)
+        self.apply_alpha(context)
         return {"FINISHED"}
     
-    def fix_alpha(self, context):
-        properties = context.scene.GT_PG_Properties
-        water_opacity = properties.water_opacity
-
+    def apply_alpha(self, context):
         if context.object.mode != "OBJECT":
             bpy.ops.object.mode_set(mode = "OBJECT")
 
-        # Variables
         object = context.active_object
-        materials_with_aplha = ["tree", "branch", "bush", "leave", "needle", "grass", "ivy", "root", "plant", "palm", "liana", "duckweed", "seerose", "flag", "leathersleeve", "ropes", "chain", "reed", "woodengate", "ratpoison", "hitsurface", "gitterzaun"]
-        water_with_blend = ["water", "puddle", "lake", "wfall"]
+        properties = context.scene.PropertyGroup_GothicTweaker
+        gothic2_water_opacity = properties.water_opacity
 
         for material_slot in object.material_slots:
             material = material_slot.material
-            material.use_nodes = True
+            material_wrapper = PrincipledBSDFWrapper(material, is_readonly = False)
+            material_wrapper.specular = 0.0 # Gothic doesn't use PBR textures - disable Specular
+            material.use_backface_culling = True
             nodes = material.node_tree.nodes
-            principledBSDF = nodes.get("Principled BSDF")
             links = material.node_tree.links
-            node_texture = None
+            image_texture = nodes.get("Image Texture")
 
-            # Look for existing Image Texture node
-            for node in material.node_tree.nodes:
-                if node.name == "Image Texture":
-                    node_texture = node
-                    break
+            if image_texture and self.image_has_alpha(image_texture.image):
+                links.new(image_texture.outputs["Alpha"], nodes["Principled BSDF"].inputs["Alpha"])
+                material.show_transparent_back = False
+                material.blend_method = "CLIP"
+                material["biplanar"] = True  
 
-            # No Image Texure - skip it       
-            if node_texture is None:
-                continue
-
-            # Set Specular Value
-            principledBSDF.inputs[7].default_value = 0.0
-            # Set Roughness Value
-            principledBSDF.inputs[9].default_value = 1.0
-            # Alpha input
-            alpha = principledBSDF.inputs[21]
-
-            # Connect Alpha from texture
-            for material_with_aplha in materials_with_aplha:
-                if material_with_aplha in material_slot.name.casefold():
-                    material.blend_method = "CLIP"
-                    links.new(node_texture.outputs[1], alpha)
-
-            # Set Alpha to fixed value
-            for water in water_with_blend:
-                if water in material_slot.name.casefold():
-                    material.blend_method = "BLEND"
-                    alpha.default_value = water_opacity
+            if gothic2_water_opacity >= 0.0:
+                # Set Alpha to a fixed value for water bodies
+                water_with_blend = ["water", "puddle", "lake", "wfall"]
+                for water in water_with_blend:
+                    if water in material_slot.name.casefold():
+                        material.show_transparent_back = False
+                        material.blend_method = "BLEND"
+                        material_wrapper.alpha = gothic2_water_opacity
+                        material["biplanar"] = True
 
         self.report({"INFO"}, "Completed")
 
+    def image_has_alpha(self, image):
+        if not image:
+            return False
+        
+        b = 32 if image.is_float else 8
 
-class GT_OT_RenameMaterialSlots(bpy.types.Operator):
+        # Grayscale + Alpha or RGB + Alpha
+        return image.depth == 2 * b or image.depth == 4 * b 
+
+
+class Operator_RenameMaterialSlots(bpy.types.Operator):
     bl_idname = "operator.rename_material_slots"
     bl_label = "Rename Material Slots"
     bl_description = "Renames all Material Slots to the name of their Texture file and cleans all duplicates"
     bl_options = {"REGISTER", "UNDO"}
 
-    material_error = [] # Collect mat for warning messages
+    material_error = [] # Collect materials for warning messages
 
     @classmethod
     def poll(cls, context):
@@ -238,10 +232,10 @@ class GT_OT_RenameMaterialSlots(bpy.types.Operator):
         return base, suffix
 
 
-class GT_OT_RenameAllMeshsByMaterialName(bpy.types.Operator):
+class Operator_RenameAllMeshsByMaterialName(bpy.types.Operator):
     bl_idname = "operator.rename_all_meshs_by_material_name"
     bl_label = "Rename All Meshes"
-    bl_description = "This will rename all meshes by their material name. Assuming that you have split mesh by material."
+    bl_description = "This will rename all meshes by their material name.\nAssuming that you have split mesh by material"
     bl_options = {"REGISTER", "UNDO"}
 
     @classmethod
@@ -276,4 +270,5 @@ class GT_OT_RenameAllMeshsByMaterialName(bpy.types.Operator):
                 desired_name = desired_name[:-len(".TGA")]
                
                 object.name = desired_name
+
         self.report({"INFO"}, "Completed")

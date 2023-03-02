@@ -16,23 +16,23 @@ bl_info = {
     "author" : "Solessfir",
     "description" : "",
     "blender" : (3, 4, 1),
-    "version" : (1, 0, 1),
+    "version" : (1, 0, 0),
     "location" : "3D Viewport Sidebar",
     "warning" : "",
     "category" : "3D View"
 }
 
 import bpy.utils, bpy.types, bpy.props
-from .gt_panel import GT_PG_Properties, GT_PT_Panel
-from .gt_operators import GT_OT_CleanCollision, GT_OT_FixAlpha, GT_OT_RenameMaterialSlots, GT_OT_RenameAllMeshsByMaterialName
+from .GothicTweakerPanel import PropertyGroup_GothicTweaker, Panel_GothicTweaker
+from .GothicTweakerOperators import Operator_CleanCollision, Operator_ApplyAlpha, Operator_RenameMaterialSlots, Operator_RenameAllMeshsByMaterialName
 
 classes = (
-    GT_PG_Properties,
-    GT_PT_Panel,
-    GT_OT_CleanCollision,
-    GT_OT_FixAlpha,
-    GT_OT_RenameMaterialSlots,
-    GT_OT_RenameAllMeshsByMaterialName
+    PropertyGroup_GothicTweaker,
+    Panel_GothicTweaker,
+    Operator_CleanCollision,
+    Operator_ApplyAlpha,
+    Operator_RenameMaterialSlots,
+    Operator_RenameAllMeshsByMaterialName
 )
 
 def register():
@@ -40,12 +40,12 @@ def register():
         bpy.utils.register_class(class_to_register)
 
     # Assign property group
-    bpy.types.Scene.GT_PG_Properties = bpy.props.PointerProperty(type = GT_PG_Properties)
+    bpy.types.Scene.PropertyGroup_GothicTweaker = bpy.props.PointerProperty(type = PropertyGroup_GothicTweaker)
     
 
 def unregister():
     # Delete property group
-    del bpy.types.Scene.GT_PG_Properties
+    del bpy.types.Scene.PropertyGroup_GothicTweaker
 
     for class_to_unregister in reversed(classes):
         bpy.utils.unregister_class(class_to_unregister)
