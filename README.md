@@ -2,7 +2,7 @@
 Blender Addon for fixing Gothic World after importing it using [KrxImpExp](https://gitlab.com/Patrix9999/krximpexp)  
 **Tested for Gothic 2 only! You may encounter some problems if you use it with Gothic 1**
 
-![image](https://user-images.githubusercontent.com/34831419/221976921-2465a688-0231-4dcc-9ac4-b2127456f092.png)
+![image](https://user-images.githubusercontent.com/34831419/222477330-d5cf2d72-bac5-438e-af0a-818558535d69.png)
 
 ### Installation:
 1. [Download](https://github.com/Solessfir/GothicTweaker/releases/tag/3.4) GothicTweaker.zip
@@ -10,13 +10,14 @@ Blender Addon for fixing Gothic World after importing it using [KrxImpExp](https
 * Alternatively, use *Install an Addon* from Blender *Preferences*
 
 ### Usage:
-Press *N* and find *Gothic Tweaker* tab
+Press N and find *Gothic Tweaker* tab
 
 ### What it does:
 * **Clean Collision:** This will remove all collision and sun blocker faces and their materials
-* **Fix Alpha:** This will fix Alpha on the Trees, Flags, etc.
-* **Rename Material Slots:** This will rename all material slots by their texture name
+* **Rename Material Slots:** Renames all Material Slots to the name of their Texture file and cleans all duplicates
 * **Rename All Meshes:** This will rename all meshes in *.blend* file by their material name. Assuming that you have split mesh by material otherwise, it will use the first material index as the name
+* **Apply Alpha:** This will fix Alpha on the Trees, Water, Flags, etc. This should be used if KrxImpExp didn't fix it on the import or you want to apply opacity to Gothic 2 water bodies
+* **Float parameter:** -1 = Disabled. Opacity that will be added to Gothic 2 Water. Don't use it for Gothic 1 it will probably not work or will work partially only
 
 ### Notes:
 * I have extensively used *Material Utilities* addon that comes with *Blender* to clean and merge materials
