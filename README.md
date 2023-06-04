@@ -12,7 +12,7 @@ Blender Addon for fixing Gothic World after importing it using [KrxImpExp](https
 ### Usage:
 Press N and find *Gothic Tweaker* tab
 
-### What it does:
+### Features:
 * **Clean Collision:** This will remove all collision and sun blocker faces and their materials
 * **Rename Material Slots:** Renames all Material Slots to the name of their Texture file and cleans all duplicates
 * **Rename All Meshes:** This will rename all meshes in *.blend* file by their material name. Assuming that you have split mesh by material otherwise, it will use the first material index as the name
