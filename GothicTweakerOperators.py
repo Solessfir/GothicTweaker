@@ -90,39 +90,39 @@ class Operator_ApplyAlpha(bpy.types.Operator):
         properties = context.scene.PropertyGroup_GothicTweaker
         gothic2_water_opacity = properties.water_opacity
 
+        # Water material names
+        water_with_blend = ["water", "puddle", "lake", "wfall"]
+
         for material_slot in object.material_slots:
             material = material_slot.material
             material_wrapper = PrincipledBSDFWrapper(material, is_readonly = False)
-            material_wrapper.specular = 0.0 # Gothic doesn't use PBR textures - disable Specular
+            material_wrapper.specular = 0.0  # Gothic doesn't use PBR textures - disable Specular
             material.use_backface_culling = True
             nodes = material.node_tree.nodes
             links = material.node_tree.links
-            image_texture = nodes.get("Image Texture")
 
-            if image_texture and self.image_has_alpha(image_texture.image):
-                links.new(image_texture.outputs["Alpha"], nodes["Principled BSDF"].inputs["Alpha"])
+            # Find Image Texture and Principled BSDF nodes
+            image_texture_node = next((node for node in nodes if isinstance(node, bpy.types.ShaderNodeTexImage)), None)
+            principled_bsdf_node = next((node for node in nodes if isinstance(node, bpy.types.ShaderNodeBsdfPrincipled)), None)
+
+            if image_texture_node and self.image_has_alpha(image_texture_node.image) and principled_bsdf_node:
+                links.new(image_texture_node.outputs["Alpha"], next((input for input in principled_bsdf_node.inputs if input.identifier == "Alpha"), None))
                 material.show_transparent_back = False
                 material.blend_method = "CLIP"
                 material["biplanar"] = True  
 
-            if gothic2_water_opacity >= 0.0:
-                # Set Alpha to a fixed value for water bodies
-                water_with_blend = ["water", "puddle", "lake", "wfall"]
-                for water in water_with_blend:
-                    if water in material_slot.name.casefold():
-                        material.show_transparent_back = False
-                        material.blend_method = "BLEND"
-                        material_wrapper.alpha = gothic2_water_opacity
-                        material["biplanar"] = True
+            if gothic2_water_opacity >= 0.0 and any(water in material_slot.name.casefold() for water in water_with_blend):
+                material.show_transparent_back = False
+                material.blend_method = "BLEND"
+                material_wrapper.alpha = gothic2_water_opacity
+                material["biplanar"] = True
 
         self.report({"INFO"}, "Completed")
 
     def image_has_alpha(self, image):
         if not image:
             return False
-        
         b = 32 if image.is_float else 8
-
         # Grayscale + Alpha or RGB + Alpha
         return image.depth == 2 * b or image.depth == 4 * b 
 
