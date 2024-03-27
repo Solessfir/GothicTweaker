@@ -123,103 +123,40 @@ class Operator_RenameMaterialSlots(bpy.types.Operator):
     bl_description = "Renames all Material Slots to the name of their Texture file and cleans all duplicates"
     bl_options = {"REGISTER", "UNDO"}
 
-    material_error = [] # Collect materials for warning messages
-
     @classmethod
     def poll(cls, context):
         return context.active_object is not None and context.active_object.type == "MESH"
 
     def execute(self, context):
-        self.material_error = [] # Reset Material errors, otherwise we risk reporting errors erroneously
-
         self.rename_material_slots(context)
-
-        if self.material_error:
-            materials = ", ".join(self.material_error)
-
-            if len(self.material_error) == 1:
-                waswere = " was"
-                suff_s = ""
-            else:
-                waswere = " were"
-                suff_s = "s"
-
-            self.report({"WARNING"}, materials + waswere + " not removed or set as Base" + suff_s)
-
         return {"FINISHED"}
     
     def rename_material_slots(self, context):
-        if context.object.mode != "OBJECT":
-            bpy.ops.object.mode_set(mode = "OBJECT")
+        bpy.ops.object.mode_set(mode = "OBJECT")
 
         object = context.active_object
+        material_slots = object.material_slots
 
-        for material_slot in object.material_slots:
+        for material_slot in material_slots:
             material = material_slot.material
             material.use_nodes = True
-            node_texture = None
+            node_texture = next((node for node in material.node_tree.nodes if isinstance(node, bpy.types.ShaderNodeTexImage)), None)
 
-            # Look for existing Image Texture node
-            for node in material.node_tree.nodes:
-                if node.name == "Image Texture":
-                    node_texture = node
-                    break
-
-            # No Image Texure - skip it       
-            if node_texture is None:
+            if not node_texture or not node_texture.image:
                 continue
 
-            if node_texture.image:
-                fixed_material_slot_name = node_texture.image.name
-                fixed_material_slot_name = fixed_material_slot_name[:-len(".TGA")]
-                old_name = material.name
-                material.name = fixed_material_slot_name
-                self.report({"INFO"}, "Material Slot: " + old_name + " renamed to: " + material.name)
+            fixed_material_slot_name = node_texture.image.name.rsplit(".", 1)[0]
+            old_name = material.name
+            material.name = fixed_material_slot_name
 
-        # Remove duplicated
-        for slot in object.material_slots:
-            self.fixup_slot(slot)
-             
+            # Remove copies, like .001, .002, etc
+            material_slot.material = bpy.data.materials.get(fixed_material_slot_name)
+
+            self.report({"INFO"}, f"Material Slot: {old_name} renamed to: {material.name}")
+
+        # Remove unused Materials after cleanup
+        bpy.ops.object.material_slot_remove_unused()
         self.report({"INFO"}, "Completed")
-
-    # Fix material slots that was assigned to materials now removed
-    def fixup_slot(self, slot):
-        if not slot.material:
-            return
-        
-        base, suffix = self.split_name(slot.material)
-        if suffix is None:
-            return
-
-        try:
-            base_mat = bpy.data.materials[base]
-        except KeyError:
-            self.report({"ERROR"}, "Base material %r not found" % base)
-            return
-
-        slot.material = base_mat
-
-    # Split the material name into a base and a suffix
-    def split_name(self, material):
-        name = material.name
-
-        # No need to do this if it's already "clean"/there is no suffix
-        if "." not in name:
-            return name, None
-
-        base, suffix = name.rsplit(".", 1)
-
-        try:
-            # trigger the exception
-            num = int(suffix, 10)
-        except ValueError:
-            # Not a numeric suffix
-            # Don't report on materials not actually included in the merge!
-            if (base == self.material_base_name and name not in self.material_error):
-                self.material_error.append(name)
-            return name, None
-
-        return base, suffix
 
 
 class Operator_RenameAllMeshsByMaterialName(bpy.types.Operator):
@@ -237,8 +174,7 @@ class Operator_RenameAllMeshsByMaterialName(bpy.types.Operator):
         return {"FINISHED"}
     
     def rename_mesh_by_material_name(self, context):
-        if context.object.mode != "OBJECT":
-            bpy.ops.object.mode_set(mode = "OBJECT")
+        bpy.ops.object.mode_set(mode = "OBJECT")
 
         for object in bpy.context.scene.objects:
             if object.type == "MESH" and object.material_slots:
@@ -256,9 +192,6 @@ class Operator_RenameAllMeshsByMaterialName(bpy.types.Operator):
                 if node_texture is None or node_texture.image is None:
                     continue
 
-                desired_name = node_texture.image.name
-                desired_name = desired_name[:-len(".TGA")]
-               
-                object.name = desired_name
+                object.name = node_texture.image.name.rsplit(".", 1)[0]
 
         self.report({"INFO"}, "Completed")
