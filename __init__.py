@@ -32,12 +32,12 @@ bl_info = {
 }
 
 import bpy.utils, bpy.types, bpy.props
-from .GothicTweakerPanel import PropertyGroup_GothicTweaker, Panel_GothicTweaker
+from .GothicTweakerPanel import PropertyGroup_GothicTweaker, VIEW3D_PT_Gothic_Tweaker_Panel
 from .GothicTweakerOperators import Operator_CleanCollision, Operator_ApplyAlpha, Operator_RenameMaterialSlots, Operator_RenameAllMeshsByMaterialName
 
 classes = (
     PropertyGroup_GothicTweaker,
-    Panel_GothicTweaker,
+    VIEW3D_PT_Gothic_Tweaker_Panel,
     Operator_CleanCollision,
     Operator_ApplyAlpha,
     Operator_RenameMaterialSlots,

@@ -11,7 +11,7 @@ class PropertyGroup_GothicTweaker(bpy.types.PropertyGroup):
     water_opacity: FloatProperty(name = "", default = -1.0, min = -1.0, max = 1.0, description = "-1 = Disabled\nOpacity that will be added to Gothic 2 Water.\nDon't use it for Gothic 1 it will probably not work or will work partially only")
 
 
-class Panel_GothicTweaker(bpy.types.Panel):
+class VIEW3D_PT_Gothic_Tweaker_Panel(bpy.types.Panel):
     bl_space_type = "VIEW_3D"
     bl_region_type = "UI"
     bl_label = "Gothic Tweaker"

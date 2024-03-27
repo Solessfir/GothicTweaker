@@ -17,55 +17,46 @@ class Operator_CleanCollision(bpy.types.Operator):
         return {"FINISHED"}
     
     def clean_collision(self, context):
-        if context.object.mode != "EDIT":
-            bpy.ops.object.mode_set(mode = "EDIT")
+        selected_object = context.active_object
 
-        bpy.ops.mesh.select_all(action = "DESELECT")
+        if selected_object and selected_object.type == "MESH":
+            bpy.ops.object.mode_set(mode = "OBJECT")
+            collision_substrings = ["p:", "alpha", "ghostoccluder", "sun_blocker"]
+            bm = bmesh.new()
+            bm.from_mesh(selected_object.data)
+            faces_to_remove = []
+            invalid_xardas_tower_faces = []
+            xardas_valid_material_index = -1
 
-        # Variables
-        object = context.edit_object
-        mesh = object.data
-        removed_materials_amount = 0
-        bm = bmesh.from_edit_mesh(mesh)
-        drauf_material_fix_index = None
-        do_drauf_material_fix = True
+            # Check each face's material index
+            for face in bm.faces:
+                material_name = selected_object.data.materials[face.material_index].name.casefold()
 
-        # Collision materials names to search through
-        names = ["p:", "alpha", "ghostoccluder", "sun_blocker"]
+                if any(substring in material_name for substring in collision_substrings):
+                    faces_to_remove.append(face)
+                    continue
 
-        for name in names:
-            for material_slot in object.material_slots:
-                # Xardas Tower wrong material index fix
-                if do_drauf_material_fix:
-                    if drauf_material_fix_index is None and "nw_misc_insidecave_wall_01" in material_slot.name.casefold():
-                        drauf_material_fix_index = material_slot.slot_index
-                        continue
+                if xardas_valid_material_index < 0 and "nw_misc_insidecave_wall_01" in material_name:
+                    xardas_valid_material_index = face.material_index
+                    continue
 
-                    if drauf_material_fix_index is not None and "nixdrauf" in material_slot.name.casefold():
-                        do_drauf_material_fix = False
-                        # Create a list with all faces
-                        face_list = [face for face in bm.faces if face.material_index == material_slot.slot_index]
-                        # Select all found faces
-                        for face in face_list:
-                            face.material_index = drauf_material_fix_index
-                        continue
+                if "nixdrauf" in material_name:
+                    invalid_xardas_tower_faces.append(face)
+            
+            if xardas_valid_material_index > -1:
+                for invalid_face in invalid_xardas_tower_faces:
+                    invalid_face.material_index = xardas_valid_material_index
 
-                if name.casefold() in material_slot.name.casefold():
-                    # Create a list with all faces
-                    face_list = [face for face in bm.faces if face.material_index == material_slot.slot_index]
-                    # Select all found faces
-                    for face in face_list:
-                        face.select = True
-                    # Delete faces
-                    bpy.ops.mesh.delete(type = "FACE")
-                    removed_materials_amount += 1
+            # Delete the faces with matching materials
+            bmesh.ops.delete(bm, geom = faces_to_remove, context = "FACES")
+            bm.to_mesh(selected_object.data)
+            bm.free()
 
-        bm.free()
-        bpy.ops.object.mode_set(mode = "OBJECT")
-
-        # Remove unused Materials after cleanup
-        bpy.ops.object.material_slot_remove_unused()
-        self.report({"INFO"}, "Total cleaned: " + str(removed_materials_amount))
+            # Remove unused Materials after cleanup
+            bpy.ops.object.material_slot_remove_unused()
+            self.report({"INFO"}, f"Total Faces removed: {len(faces_to_remove)}")
+        else:
+            self.report({"INFO"}, "No valid mesh object selected")
 
 
 class Operator_ApplyAlpha(bpy.types.Operator):
@@ -83,8 +74,7 @@ class Operator_ApplyAlpha(bpy.types.Operator):
         return {"FINISHED"}
     
     def apply_alpha(self, context):
-        if context.object.mode != "OBJECT":
-            bpy.ops.object.mode_set(mode = "OBJECT")
+        bpy.ops.object.mode_set(mode="EDIT")
 
         object = context.active_object
         properties = context.scene.PropertyGroup_GothicTweaker
@@ -124,7 +114,7 @@ class Operator_ApplyAlpha(bpy.types.Operator):
             return False
         b = 32 if image.is_float else 8
         # Grayscale + Alpha or RGB + Alpha
-        return image.depth == 2 * b or image.depth == 4 * b 
+        return image.depth == 2 * b or image.depth == 4 * b
 
 
 class Operator_RenameMaterialSlots(bpy.types.Operator):
